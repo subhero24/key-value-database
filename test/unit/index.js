@@ -75,8 +75,7 @@ Test('database with a single migration creating an index', () => {
 	let database = new Database(localStorage, { migrations });
 	let schema = database.storage.getItem(`${database.prefix}#schema`);
 
-	assert.deepStrictEqual(schema.tables[0].indexes[0].keys[0], 'color');
-	assert.deepStrictEqual(schema.tables[0].indexes[0].values[0], 'o => o.color');
+	assert.deepStrictEqual(schema.tables[0].indexes[0].attributes[0], ['color', 'o => o.color']);
 });
 
 Test('create table', () => {

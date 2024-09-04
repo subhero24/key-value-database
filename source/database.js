@@ -171,10 +171,7 @@ export default class Database {
 				let table = this.tables[tableName];
 				let tableSchema = { name: tableName, entry: table.entry };
 				if (table.indexes.length) {
-					tableSchema.indexes = table.indexes.map(tableIndex => ({
-						keys: tableIndex.keys,
-						values: tableIndex.valued.map(value => value.toString()),
-					}));
+					tableSchema.indexes = table.indexes.map(tableIndex => ({ attributes: tableIndex.keys.map((key, index) => [key, tableIndex.valued[index].toString()]) }));
 				}
 
 				return tableSchema;
@@ -191,7 +188,7 @@ export default class Database {
 					this.addTable(tableSchema.name, tableSchema.entry);
 					if (tableSchema.indexes) {
 						for (let tableIndex of tableSchema.indexes) {
-							this.addIndex(tableSchema.name, ...tableIndex.keys.map((key, index) => [key, eval('(' + tableIndex.values[index] + ')')]));
+							this.addIndex(tableSchema.name, ...tableIndex.attributes.map(([key, value]) => [key, (0, eval)('(' + value + ')')]));
 						}
 					}
 				}
