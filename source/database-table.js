@@ -16,6 +16,7 @@ export default class Table {
 	 */
 	constructor(database, tableName, entryName) {
 		this.name = tableName;
+		this.entry = entryName;
 		/** @type {Array<Index>} */
 		this.indexes = [];
 		this.database = database;

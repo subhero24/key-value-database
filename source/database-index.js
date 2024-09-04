@@ -14,11 +14,13 @@ export default class Index {
 	 */
 	constructor(database, table, ...attributes) {
 		let keys = attributes.map(attribute => (attribute instanceof Array ? attribute[0] : attribute));
-		let values = attributes.map(attribute => (attribute instanceof Array ? attribute[1] : attribute));
+		let values = attributes.map(attribute => (attribute instanceof Array ? attribute[1] : row => row[attribute]));
+		let valued = attributes.map(attribute => (attribute instanceof Array ? attribute[1].toString() : `o => o.${attribute}`));
 
 		this.keys = keys;
 		this.table = table;
 		this.values = values;
+		this.valued = valued;
 		this.database = database;
 
 		let index = database.findIndex(table.name, ...keys);
@@ -72,7 +74,7 @@ export default class Index {
 	key(rowOrValue, ...values) {
 		let propValues;
 		if (typeof rowOrValue === 'object') {
-			propValues = this.values.map(value => (typeof value === 'function' ? value(rowOrValue) : rowOrValue[value]));
+			propValues = this.values.map(value => value(rowOrValue));
 		} else {
 			propValues = [rowOrValue, ...values];
 		}

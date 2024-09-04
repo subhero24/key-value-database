@@ -11,6 +11,7 @@
 		"declarationDir": "build/types",
 		"declarationMap": true,
 		"moduleResolution": "Bundler",
+		"noImplicitAny": false,
 		"noUnusedLocals": false,
 		"noUnusedParameters": false
 	}

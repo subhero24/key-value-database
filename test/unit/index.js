@@ -31,11 +31,58 @@ Test('version with a single migrations', () => {
 	assert.deepStrictEqual(version, 1);
 });
 
+Test('migrations should not run twice', () => {
+	let migrated = 0;
+
+	let migration = function (database) {
+		migrated++;
+		database.addTable('cars');
+		database.addIndex('cars', 'color');
+	};
+
+	let migrations = [migration];
+	new Database(localStorage, { migrations });
+	new Database(localStorage, { migrations });
+
+	assert.deepStrictEqual(migrated, 1);
+});
+
+Test('database with a single migration creating a table', () => {
+	let migration = function (database) {
+		database.addTable('cars');
+	};
+
+	let db = new Database(localStorage, { migrations: [migration] });
+	let schema = db.schema;
+
+	assert.deepStrictEqual(schema.tables.length, 1);
+	assert.deepStrictEqual(schema.tables[0].name, 'cars');
+
+	let database = new Database(localStorage, { migrations: [migration] });
+	let car = db.create('cars', { color: 'hotpink' });
+	let cars = db.select('cars');
+
+	assert.deepStrictEqual(cars[0].color, 'hotpink');
+});
+
+Test('database with a single migration creating an index', () => {
+	let migration = function (database) {
+		database.addTable('cars');
+		database.addIndex('cars', 'color');
+	};
+
+	let migrations = [migration];
+	let database = new Database(localStorage, { migrations });
+	let schema = database.storage.getItem(`${database.prefix}#schema`);
+
+	assert.deepStrictEqual(schema.tables[0].indexes[0].keys[0], 'color');
+	assert.deepStrictEqual(schema.tables[0].indexes[0].values[0], 'o => o.color');
+});
+
 Test('create table', () => {
 	let database = new Database(localStorage);
 
 	let table = database.addTable('cars');
-
 	let cars = database.select('cars');
 
 	assert.deepStrictEqual(cars.length, 0);
@@ -417,18 +464,18 @@ Test('select ids with properties', () => {
 	assert.deepStrictEqual(carIds, ['B']);
 });
 
-Test.only('huh?', () => {
-	let database = new Database(localStorage);
+// Test('huh?', () => {
+// 	let database = new Database(localStorage);
 
-	database.addTable('todos', 'todo');
-	database.addTable('settings', 'setting');
+// 	database.addTable('todos', 'todo');
+// 	database.addTable('settings', 'setting');
 
-	database.create('settings', { id: 'introduction', value: false });
+// 	database.create('settings', { id: 'introduction', value: false });
 
-	for (let key in localStorage) {
-		console.log(key, localStorage.getItem(key));
-	}
-});
+// 	for (let key in localStorage) {
+// 		console.log(key, localStorage.getItem(key));
+// 	}
+// });
 
 // Test('relations', () => {
 // 	let database = new Database(localStorage)

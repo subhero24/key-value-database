@@ -155,7 +155,53 @@ export default class Database {
 		this.storage.setItem(`${this.prefix}#version`, version);
 	}
 
+	get schema() {
+		return this.storage.getItem(`${this.prefix}#schema`);
+	}
+
+	set schema(schema) {
+		this.storage.setItem(`${this.prefix}#schema`, schema);
+	}
+
+	makeSchema() {
+		let schema = {};
+		let tableNames = Object.keys(this.tables);
+		if (tableNames.length) {
+			schema.tables = tableNames.map(tableName => {
+				let table = this.tables[tableName];
+				let tableSchema = { name: tableName, entry: table.entry };
+				if (table.indexes.length) {
+					tableSchema.indexes = table.indexes.map(tableIndex => ({
+						keys: tableIndex.keys,
+						values: tableIndex.valued.map(value => value.toString()),
+					}));
+				}
+
+				return tableSchema;
+			});
+		}
+
+		return schema;
+	}
+
+	loadSchema(schema) {
+		if (schema) {
+			if (schema.tables) {
+				for (let tableSchema of schema.tables) {
+					this.addTable(tableSchema.name, tableSchema.entry);
+					if (tableSchema.indexes) {
+						for (let tableIndex of tableSchema.indexes) {
+							this.addIndex(tableSchema.name, ...tableIndex.keys.map((key, index) => [key, eval('(' + tableIndex.values[index] + ')')]));
+						}
+					}
+				}
+			}
+		}
+	}
+
 	migrate() {
+		this.loadSchema(this.schema);
+
 		let version = this.version ?? 0;
 		for (let index = version; index < this.migrations.length; index++) {
 			let backup = Object.entries(this.storage);
@@ -164,6 +210,7 @@ export default class Database {
 				migration.call(this, this);
 
 				this.version = index + 1;
+				this.schema = this.makeSchema();
 			} catch (error) {
 				this.storage.clear();
 				for (let [key, value] of backup) {

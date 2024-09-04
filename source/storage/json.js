@@ -16,21 +16,23 @@ export default class JSONStorage {
 
 	/**
 	 * @param {string} key
+	 * @param {(this: any, key: string, value: any) => any} [func]
 	 * @returns {any}
 	 */
-	getItem(key) {
+	getItem(key, func) {
 		let value = this.value.getItem(key);
 		if (value) {
-			return JSON.parse(value);
+			return JSON.parse(value, func);
 		}
 	}
 
 	/**
 	 * @param {string} key
 	 * @param {any} value
+	 * @param {(this: any, key: string, value: any) => any} [func]
 	 */
-	setItem(key, value) {
-		this.value.setItem(key, JSON.stringify(value));
+	setItem(key, value, func) {
+		this.value.setItem(key, JSON.stringify(value, func));
 	}
 
 	/**
