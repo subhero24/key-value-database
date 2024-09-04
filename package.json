@@ -1,6 +1,6 @@
 {
 	"name": "key-value-database",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "A database for key value stores",
 	"type": "module",
 	"main": "build/index.js",
